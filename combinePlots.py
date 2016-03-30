@@ -1,8 +1,4 @@
-#sieip EB -0.05 0.05
-#HLT_Diphoton30_18_R9Id85_OR_Iso50T80LCaloId24b40e_AND_HE10P0_R9Id50b80e_PixelSeed_Mass70_v1
-
-
-import ROOT
+ import ROOT
 import sys, operator
 import hggStyle
 

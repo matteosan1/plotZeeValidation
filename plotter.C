@@ -80,11 +80,11 @@ void readTransformations(std::vector<TGraph*>& graphs) {
   fInput->Close();
 }
 
-void plotter() {
+void plotter(const char* datafilename, const char* mcfilename) {
 
   // READ Transformations
-  std::vector<TGraph*> graphs;
-  readTransformations(graphs);
+  //std::vector<TGraph*> graphs;
+  //readTransformations(graphs);
   
   // READ SAMPLES
   ifstream myReadFile;
@@ -110,9 +110,9 @@ void plotter() {
     
     TChain* chain = new TChain("diphotonDumper/trees/zeevalidation_13TeV_All");
     if (sampletype == 0) {
-      chain->Add("../testCaso/out_data.root");
+      chain->Add(datafilename);
     } else
-      chain->Add("../testCaso/out_zee.root");
+      chain->Add(mcfilename);
     
     TBranchesI branchesI;
     TBranchesF branchesF;
@@ -173,9 +173,7 @@ void plotter() {
     // READING PLOT DEFINITION
     std::cout << "Reading plots..." << std::endl;
     myReadFile.open("plotvariables.dat");
-    //std::string line;
     std::map<int, HistoContainer> histos;
-    //for (unsigned int s=0; s<samples.size(); s++) 
     histos[samples[sampletype].second] = HistoContainer();
     
     while(!myReadFile.eof()) {
@@ -189,14 +187,7 @@ void plotter() {
       h->GetXaxis()->SetTitle(temp.xaxis.c_str());
       h->GetYaxis()->SetTitle(temp.yaxis.c_str());
       
-      //for (unsigned int s=0; s<samples.size(); s++) {
       int ncats = categories[temp.ncat].size();
-      //std::cout << ncats << " " << temp.ncat << std::endl;
-      //if (ncats == 0) {
-      //std::string name = temp.name + "_cat0" + "_" + samples[s].first;  
-      //histos[samples[s].second].histoF[temp.var].push_back(*((TH1F*)h->Clone(name.c_str())));
-      //} else {
-      //std::cout << ncats << std::endl;
       for (int c=0; c<ncats; c++) {
 	
 	std::ostringstream convert; 
@@ -215,59 +206,27 @@ void plotter() {
       if (z%10000 == 0)
 	std::cout << z << std::endl;
       
-      //int entryNumber = chain->GetEntryNumber(z);
-      //if (entryNumber<0)
-      //  break;
-      
-      chain->GetEntry(z);//entryNumber);
+      chain->GetEntry(z);
       float mass = branchesF["mass"];
       if ((mass > 70 && mass < 110) && (branchesF["subIDMVA"]>-0.9 && branchesF["leadIDMVA"]>-0.9)) {
 	
-	//int itype = branchesI["itype"];
-	//if (itype > 29) 
-	//std::cout << branchesF["weight"] << " " << mass << " " << branchesUC["lumis"] << " " << branchesUI["event"] << std::endl;
 	float weight = 1; 
 	if (sampletype == 1)
 	  weight = branchesF["weight"]*getWeights(0, 0, branchesF["diphopt"]);
 	
 	for (unsigned int s=0; s<samples.size(); s++) {
-	  //if (samples[s].second == branchesI["itype"]) {
 	  for (unsigned int h=0; h<histoDef.size(); h++) {
 	    //std::cout << histoDef[h].name << " " << histoDef[h].var << " " << histoDef[h].ncat << std::endl;
 	    std::string name = histoDef[h].name;
 	    std::string var = histoDef[h].var;
 	    int category = histoDef[h].ncat;
 	    
-	    //if (itype == 0 and mass >= 110 and mass < 150 and var == "mass")
-	    //  continue;
-	    
 	    float final_weight = weight;
-	    //if (sampletype == 1)
-	    //  final_weight = weight;
-	    //if (name.find("sub")) 
-	    //  final_weight *=weightSubLead;
-	    //else 
-	    //  final_weight *=weightLead;
-	    //if (itype == 0 and mass >= 110 and mass < 150 and var == "mass")
-	    //  continue;
-	    
-	    
-	    //std::cout << samples[s].second << std::endl;
-	    //std::cout << "CAT, SIZE " << category << " " << categories[category].size() << std::endl;
+
 	    for (unsigned int cat=0; cat<categories[category].size(); cat++) {
-	      //std::cout << "CAT N " << cat << std::endl;
-	      categories[category][cat]->UpdateFormulaLeaves();//GetNdata();
-	      //std::cout <<  << std::endl;
+	      categories[category][cat]->UpdateFormulaLeaves();
+
 	      if (categories[category][cat]->EvalInstance()) {
-		//std::cout << var << " " << cat << std::endl;
-		//std::cout << "LEN " << histos[samples[s].second].histoF[var].size() << std::endl;
-		//if (itype == 0)
-		//  histos[samples[s].second].histoF[name][cat].Fill(branchesF[var]);
-		//else
-		//histos[samples[s].second].histoF[var][cat].Fill(branchesF[var], branchesD["xsec_weight"]*branchesD["pu_weight"]);
-		//std::cout << name << " " << cat << " " << branchesF[var] << " " << var << std::endl;
-		//std::cout << name << " " << cat << " " << branchesF[var] << " " << var << std::endl;
-		
 		if (name == "idmvaup1" || name == "idmvaup2")
  		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]+0.03, final_weight);
 		else if (name == "idmvadown1" || name == "idmvadown2")  
@@ -286,7 +245,6 @@ void plotter() {
 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesI[var], final_weight);
 	      }	    
 	    }
-	    //}
 	  }
     
 	  break;
