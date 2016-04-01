@@ -14,7 +14,9 @@
 #include <vector>
 #include <sstream>
 
- 
+float idmvaShift = 0.03;
+float sigmaEScale = 0.05; // relative 5%
+
 std::vector<std::pair<std::string, int> > samples;
 
 typedef std::map<std::string, Int_t> TBranchesI;
@@ -228,17 +230,17 @@ void plotter(const char* datafilename, const char* mcfilename) {
 
 	      if (categories[category][cat]->EvalInstance()) {
 		if (name == "idmvaup1" || name == "idmvaup2")
- 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]+0.03, final_weight);
+ 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]+idmvaShift, final_weight);
 		else if (name == "idmvadown1" || name == "idmvadown2")  
- 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]-0.03, final_weight);
+ 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]-idmvaShift, final_weight);
 		else if (name == "idmvatop1" || name == "idmvatop2")
 		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat+2]->Eval(branchesF[var]), final_weight*graphs[cat+2]->Eval(9999));
 		else if (name == "idmvabottom1" || name == "idmvabottom2")
 		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat]->Eval(branchesF[var]), final_weight*graphs[cat]->Eval(9999));
 		else if (name == "sigmaEoEup1" || name == "sigmaEoEup2")
- 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*1.05, final_weight);
+ 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*(1+sigmaEScale), final_weight);
 		else if (name == "sigmaEoEdown1" || name == "sigmaEoEdown2")  
- 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*0.95, final_weight);
+ 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*(1-sigmaEScale), final_weight);
 		else if (branchesF.find(var) != branchesF.end())
 		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var], final_weight);
 		else if (branchesI.find(var) != branchesI.end())
