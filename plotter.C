@@ -214,7 +214,7 @@ void plotter(const char* datafilename, const char* mcfilename) {
 	
 	float weight = 1; 
 	if (sampletype == 1)
-	  weight = branchesF["weight"]*getWeights(0, 0, branchesF["diphopt"]);
+	  weight = branchesF["weight"]; // *getWeights(0, 0, branchesF["diphopt"]);   // REACTIVATE TO MAKE pT reweighing
 	
 	for (unsigned int s=0; s<samples.size(); s++) {
 	  for (unsigned int h=0; h<histoDef.size(); h++) {
