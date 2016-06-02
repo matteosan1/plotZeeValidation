@@ -35,6 +35,9 @@ def test(makeOutput=False):
 
     filenames = [sys.argv[-2], sys.argv[-1]]
     for nf, f in enumerate(filenames):
+
+        print "processing",f
+
         fin = ROOT.TFile(f)
         t = fin.Get("diphotonDumper/trees/zeevalidation_13TeV_All")
 
@@ -81,6 +84,10 @@ def test(makeOutput=False):
         entries = t.GetEntries()
 
         for z in xrange(entries):
+            if (z+1) % 5000 == 0:
+               print "processing entry %d/%d (%5.1f%%)\r" % (z + 1, entries, (z+1) / float(entries) * 100.),
+               sys.stdout.flush()
+
             t.GetEntry(z)
             
             if (mass[0] < 75 or mass[0] > 105):
@@ -142,6 +149,10 @@ def test(makeOutput=False):
                         hdata[3].Fill(s42[0], weight[0])
                         hdata[5].Fill(full5x5r92[0], weight[0])
 
+        print                
+        # end of loop over tree entries
+    # end of loop over input files
+
                 
     if (not makeOutput):
         c = []
@@ -155,6 +166,8 @@ def test(makeOutput=False):
             hmcCorr[i].SetLineColor(ROOT.kBlue)
             hdata[i].Draw("SAMEPE")
             hdata[i].SetMarkerStyle(20)
+
+        print "plotting done, press enter to continue"
         raw_input()
     else:
         output = ROOT.TFile("inputHistos.root", "recreate")
@@ -164,7 +177,7 @@ def test(makeOutput=False):
         for h in hdata:
             h.Write()
         output.Close()
-
+        print "wrote inputHistos.root"
 
 def makeTransformation():
     global hmc, hdata, transfName, plotNameData, plotNameMC, plotDef      
@@ -215,6 +228,7 @@ def makeTransformation():
     for g in graphs:
         g.Write()
     out.Close()
+    print "wrote transformation.root"
 
 if (__name__ == "__main__"):
     parser = OptionParser(usage="Usage: %prog [options] [mc_ntuple_filename] [target_ntuple_filename]",)
