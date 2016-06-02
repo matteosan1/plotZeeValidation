@@ -24,14 +24,19 @@ def test(makeOutput=False):
         print "You need same number of plots for data and MC"
         sys.exit(1)
 
-    for z in xrange(len(plotNameData)):
-        hdata.append(ROOT.TH1F(plotNameData[z], "", plotDef[z][0], plotDef[z][1], plotDef[z][2]))
+    for histoList, plotNames, suffix in (
+        (hdata,   plotNameData, ""),
+        (hmc,     plotNameMC,   ""),
+        (hmcCorr, plotNameMC,   "_corr"),
+        ):
+        
+        for z in xrange(len(plotNames)):
 
-    for z in xrange(len(plotNameMC)):
-        hmc.append(ROOT.TH1F(plotNameMC[z], "", plotDef[z][0], plotDef[z][1], plotDef[z][2]))
+            title = plotNames[z]
+            if title.startswith('h'):
+                title = title[1:]
 
-    for z in xrange(len(plotNameMC)):
-        hmcCorr.append(ROOT.TH1F(plotNameMC[z]+"_corr", "", plotDef[z][0], plotDef[z][1], plotDef[z][2]))
+            histoList.append(ROOT.TH1F(plotNames[z] + suffix, title, plotDef[z][0], plotDef[z][1], plotDef[z][2]))
 
     filenames = [sys.argv[-2], sys.argv[-1]]
     for nf, f in enumerate(filenames):
