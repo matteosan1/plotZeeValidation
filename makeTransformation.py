@@ -235,7 +235,7 @@ if (__name__ == "__main__"):
     parser.add_option("-p", "--prepare-plots", dest="preparePlots", action="store_true", help="Dump plots", default=False)
     parser.add_option("-c", "--transform", action="store_true", help="Derive actual transformations", default=False)
     parser.add_option("-t", "--test", action="store_true", help="Test transformations", default=False)
-    parser.add_option(
+    # parser.add_option(
 
     (options, arg) = parser.parse_args()
 
