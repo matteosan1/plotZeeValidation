@@ -226,8 +226,9 @@ void plotter(const char* datafilename, const char* mcfilename) {
     myReadFile.close();
 
     for (int z=0; z<chain->GetEntries(); z++) {
-      if (z%10000 == 0)
-	std::cout << z << std::endl;
+      if ((z+1)%10000 == 0)
+	std::cout << "processing entry " << z + 1 << "/" << chain->GetEntries()
+		  << std::endl;
       
       chain->GetEntry(z);
       float mass = branchesF["mass"];
@@ -291,5 +292,6 @@ void plotter(const char* datafilename, const char* mcfilename) {
     }
     
     out->Close();
+    cout << "wrote " << rootOutputFile << endl;
   }
 }
