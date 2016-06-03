@@ -74,11 +74,32 @@ public:
 };
 
 void readTransformations(std::vector<TGraph*>& graphs) {
-  TFile* fInput = TFile::Open("transformationIDMVA_final.root");
-  graphs.push_back((TGraph*)fInput->Get("trasfhebdown"));
-  graphs.push_back((TGraph*)fInput->Get("trasfheedown"));
-  graphs.push_back((TGraph*)fInput->Get("trasfhebup"));
-  graphs.push_back((TGraph*)fInput->Get("trasfheeup"));
+  const string transformationFile = "transformationIDMVA_final.root";
+
+  std::cout << "reading transformations from " << transformationFile << std::endl;
+  TFile* fInput = TFile::Open(transformationFile.c_str());
+  if (fInput == NULL || ! fInput->IsOpen())
+  {
+    std::cerr << "failed to open transformation file " << transformationFile << ", exiting." << std::endl;
+    exit(1);
+  }
+
+  std::vector<string> graphNames = {
+    "trasfhebdown",
+    "trasfheedown",
+    "trasfhebup",
+    "trasfheeup",
+  };
+
+  for (const string& graphName : graphNames)
+  {
+    TGraph *graph = (TGraph*)fInput->Get(graphName.c_str());
+    if (graph == NULL)
+    {
+      std::cerr << "failed to find graph '" << graphName << "' in file " << transformationFile << ", exiting." << std::endl;
+      exit(1);
+    }
+  } // loop over graphs
   fInput->Close();
 }
 
