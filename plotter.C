@@ -73,20 +73,43 @@ public:
   //int categories;
 };
 
-void readTransformations(std::vector<TGraph*>& graphs) {
-  TFile* fInput = TFile::Open("transformationIDMVA_final.root");
-  graphs.push_back((TGraph*)fInput->Get("trasfhebdown"));
-  graphs.push_back((TGraph*)fInput->Get("trasfheedown"));
-  graphs.push_back((TGraph*)fInput->Get("trasfhebup"));
-  graphs.push_back((TGraph*)fInput->Get("trasfheeup"));
+void readTransformations(std::vector<TGraph*>& graphs, const std::string &transformationFile) {
+  // const string transformationFile = "transformationIDMVA_final.root";
+
+  std::cout << "reading transformations from " << transformationFile << std::endl;
+  TFile* fInput = TFile::Open(transformationFile.c_str());
+  if (fInput == NULL || ! fInput->IsOpen())
+  {
+    std::cerr << "failed to open transformation file " << transformationFile << ", exiting." << std::endl;
+    exit(1);
+  }
+
+  std::vector<string> graphNames = {
+    "trasfhebdown",
+    "trasfheedown",
+    "trasfhebup",
+    "trasfheeup",
+  };
+
+  for (const string& graphName : graphNames)
+  {
+    TGraph *graph = (TGraph*)fInput->Get(graphName.c_str());
+    if (graph == NULL)
+    {
+      std::cerr << "failed to find graph '" << graphName << "' in file " << transformationFile << ", exiting." << std::endl;
+      exit(1);
+    }
+  } // loop over graphs
   fInput->Close();
 }
 
-void plotter(const char* datafilename, const char* mcfilename) {
+/** @param correctIDMVA is for correcting idmvatop1/2 and idvmvabottom1/2 */
+void plotter(const char* datafilename, const char* mcfilename, const char *idmvaCorrectionFile = NULL) {
 
   // READ Transformations
-  //std::vector<TGraph*> graphs;
-  //readTransformations(graphs);
+  std::vector<TGraph*> graphs;
+  if (idmvaCorrectionFile != NULL)
+    readTransformations(graphs, idmvaCorrectionFile);
   
   // READ SAMPLES
   ifstream myReadFile;
@@ -205,8 +228,9 @@ void plotter(const char* datafilename, const char* mcfilename) {
     myReadFile.close();
 
     for (int z=0; z<chain->GetEntries(); z++) {
-      if (z%10000 == 0)
-	std::cout << z << std::endl;
+      if ((z+1)%10000 == 0)
+	std::cout << "processing entry " << z + 1 << "/" << chain->GetEntries()
+		  << std::endl;
       
       chain->GetEntry(z);
       float mass = branchesF["mass"];
@@ -234,9 +258,19 @@ void plotter(const char* datafilename, const char* mcfilename) {
 		else if (name == "idmvadown1" || name == "idmvadown2")  
  		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]-idmvaShift, final_weight);
 		else if (name == "idmvatop1" || name == "idmvatop2")
-		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat+2]->Eval(branchesF[var]), final_weight*graphs[cat+2]->Eval(9999));
+		{
+		  if (idmvaCorrectionFile != NULL)
+                  {
+		    histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat+2]->Eval(branchesF[var]), final_weight*graphs[cat+2]->Eval(9999));
+		  }
+		}
 		else if (name == "idmvabottom1" || name == "idmvabottom2")
-		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat]->Eval(branchesF[var]), final_weight*graphs[cat]->Eval(9999));
+		{
+		  if (idmvaCorrectionFile != NULL)
+                  {
+		    histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat]->Eval(branchesF[var]), final_weight*graphs[cat]->Eval(9999));
+		  }
+		}
 		else if (name == "sigmaEoEup1" || name == "sigmaEoEup2")
  		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*(1+sigmaEScale), final_weight);
 		else if (name == "sigmaEoEdown1" || name == "sigmaEoEdown2")  
@@ -270,5 +304,6 @@ void plotter(const char* datafilename, const char* mcfilename) {
     }
     
     out->Close();
+    cout << "wrote " << rootOutputFile << endl;
   }
 }
