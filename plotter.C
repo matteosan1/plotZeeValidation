@@ -73,8 +73,8 @@ public:
   //int categories;
 };
 
-void readTransformations(std::vector<TGraph*>& graphs) {
-  const string transformationFile = "transformationIDMVA_final.root";
+void readTransformations(std::vector<TGraph*>& graphs, const std::string &transformationFile) {
+  // const string transformationFile = "transformationIDMVA_final.root";
 
   std::cout << "reading transformations from " << transformationFile << std::endl;
   TFile* fInput = TFile::Open(transformationFile.c_str());
@@ -103,11 +103,13 @@ void readTransformations(std::vector<TGraph*>& graphs) {
   fInput->Close();
 }
 
-void plotter(const char* datafilename, const char* mcfilename) {
+/** @param correctIDMVA is for correcting idmvatop1/2 and idvmvabottom1/2 */
+void plotter(const char* datafilename, const char* mcfilename, const char *idmvaCorrectionFile = NULL) {
 
   // READ Transformations
-  //std::vector<TGraph*> graphs;
-  //readTransformations(graphs);
+  std::vector<TGraph*> graphs;
+  if (idmvaCorrectionFile != NULL)
+    readTransformations(graphs, idmvaCorrectionFile);
   
   // READ SAMPLES
   ifstream myReadFile;
@@ -256,9 +258,19 @@ void plotter(const char* datafilename, const char* mcfilename) {
 		else if (name == "idmvadown1" || name == "idmvadown2")  
  		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]-idmvaShift, final_weight);
 		else if (name == "idmvatop1" || name == "idmvatop2")
-		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat+2]->Eval(branchesF[var]), final_weight*graphs[cat+2]->Eval(9999));
+		{
+		  if (idmvaCorrectionFile != NULL)
+                  {
+		    histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat+2]->Eval(branchesF[var]), final_weight*graphs[cat+2]->Eval(9999));
+		  }
+		}
 		else if (name == "idmvabottom1" || name == "idmvabottom2")
-		  histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat]->Eval(branchesF[var]), final_weight*graphs[cat]->Eval(9999));
+		{
+		  if (idmvaCorrectionFile != NULL)
+                  {
+		    histos[samples[sampletype].second].histoF[name][cat].Fill(graphs[cat]->Eval(branchesF[var]), final_weight*graphs[cat]->Eval(9999));
+		  }
+		}
 		else if (name == "sigmaEoEup1" || name == "sigmaEoEup2")
  		  histos[samples[sampletype].second].histoF[name][cat].Fill(branchesF[var]*(1+sigmaEScale), final_weight);
 		else if (name == "sigmaEoEdown1" || name == "sigmaEoEdown2")  
